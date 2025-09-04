@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Gestión de Precios</h1>
+  </header>
+  <div class="container">
+    <div class="header-actions">
+      <a href="/" class="btn-secondary">← Volver al Menú</a>
+      <form method="GET" action="/producto/editar/<%= producto.id %>" style="display:inline;">
+        <button type="submit" class="btn-primary">Editar Producto</button>
+      </form>
+    </div>
+
+    <h2>
+      <%= producto.nombre %>
+    </h2>
+
+    <div class="producto-detalle">
+      <% if (producto.foto && producto.foto !=='/default-product.png' ) { %>
+        <img src="<%= producto.foto %>" alt="<%= producto.nombre %>" class="foto-producto-detalle">
+        <% } %>
+
+          <div class="info-detalle">
+            <div><strong>Marca:</strong>
+              <%= producto.marca %>
+            </div>
+            <div><strong>Precio de compra:</strong>
+              <%= producto.precio_compra %>€
+            </div>
+            <div><strong>Precio actual:</strong>
+              <%= producto.precio_actual || 'No definido' %>€
+            </div>
+            <div><strong>Calidad:</strong>
+              <%= producto.calidad %>
+            </div>
+            <div><strong>Urgencia de venta:</strong>
+              <%= producto.urgencia %>
+            </div>
+
+            <div class="precio-sugerido-container">
+              <strong>Precio sugerido:</strong>
+              <% if (producto.precio_sugerido) { %>
+                <span class="precio-sugerido">
+                  <%= producto.precio_sugerido %>€
+                </span>
+                <% } else { %>
+                  <span class="precio-sugerido">No calculado</span>
+                  <% } %>
+
+                    <form method="POST" action="/producto/calcular-precio/<%= producto.id %>"
+                      style="display:inline; margin-left: 10px;">
+                      <button type="submit" class="btn-ia">
+                        <%= producto.precio_sugerido ? 'Recalcular con IA' : 'Calcular con IA' %>
+                      </button>
+                    </form>
+            </div>
+
+            <% if (producto.precio_actual && producto.precio_sugerido) { %>
+              <div class="analisis-precio">
+                <% const diferencia=producto.precio_sugerido - producto.precio_actual; %>
+                  <p>
+                    Recomendación:
+                    <span style="color:<%= diferencia > 0 ? 'green' : 'red' %>">
+                      <%= diferencia> 0 ? 'Aumentar' : (diferencia < 0 ? 'Reducir' : 'Mantener' ) %>
+                          <%= diferencia !==0 ? Math.abs(diferencia).toFixed(2)+'€' : 'precio' %>
+                    </span>
+                  </p>
+              </div>
+              <% } %>
+          </div>
+    </div>
+
+    <div class="action-buttons">
+      <form method="POST" action="/producto/eliminar/<%= producto.id %>"
+        onsubmit="return confirm('¿Eliminar este producto y todo su histórico?')">
+        <button type="submit" class="btn-danger">Eliminar Producto</button>
+      </form>
+    </div>
+
+    <h3>Histórico de precios</h3>
+
+    <% if (historico.length> 0) { %>
+      <table class="historico-precios">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Precio Actual</th>
+            <th>Precio Sugerido</th>
+            <th>Diferencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% historico.forEach(item=> { %>
+            <tr>
+              <td>
+                <%= new Date(item.fecha).toLocaleDateString() %>
+              </td>
+              <td>
+                <%= item.precio_actual || '-' %>€
+              </td>
+              <td>
+                <%= item.precio_sugerido %>€
+              </td>
+              <td style="color:<%= item.precio_sugerido - (item.precio_actual || 0) > 0 ? 'green' : 'red' %>">
+                <%= (item.precio_sugerido - (item.precio_actual || 0)).toFixed(2) %>€
+              </td>
+            </tr>
+            <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+        <p>No hay histórico de precios para este producto.</p>
+        <% } %>
+  </div>
+</body>
+
+</html>

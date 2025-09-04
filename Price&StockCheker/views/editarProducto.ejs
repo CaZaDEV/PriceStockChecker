@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Editar Producto</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Editar Producto</h1>
+  </header>
+  <div class="container">
+    <div class="container-form">
+      <form action="/producto/editar/<%= producto.id %>" method="POST" enctype="multipart/form-data">
+        <label>Nombre:</label>
+        <input type="text" name="nombre" value="<%= producto.nombre %>" required>
+
+        <div class="form-group">
+          <label>Categoría:</label>
+          <select name="categoria" required>
+            <option value="">Seleccione...</option>
+            <option value="Fruta/Verdura" <%=producto.categoria==='Fruta/Verdura' ? 'selected' : '' %>>Fruta/Verdura
+            </option>
+            <option value="Bebida" <%=producto.categoria==='Bebida' ? 'selected' : '' %>>Bebida</option>
+            <option value="Alimento" <%=producto.categoria==='Alimento' ? 'selected' : '' %>>Alimento</option>
+            <option value="Otros" <%=producto.categoria==='Otros' ? 'selected' : '' %>>Otros</option>
+          </select>
+        </div>
+
+        <label>Marca:</label>
+        <input type="text" name="marca" value="<%= producto.marca %>" required>
+
+        <label>Precio de compra (€):</label>
+        <input type="number" step="0.01" name="precio_compra" value="<%= producto.precio_compra %>" required />
+
+        <label>Precio actual de venta (€):</label>
+        <input type="number" step="0.01" name="precio_actual" value="<%= producto.precio_actual %>" />
+
+        <label>Calidad:</label>
+        <select name="calidad" required>
+          <option value="alta" <%=producto.calidad==='alta' ? 'selected' : '' %>>Alta</option>
+          <option value="media" <%=producto.calidad==='media' ? 'selected' : '' %>>Media</option>
+          <option value="baja" <%=producto.calidad==='baja' ? 'selected' : '' %>>Baja</option>
+        </select>
+
+        <label>Urgencia de venta:</label>
+        <select name="urgencia" required>
+          <option value="muy alta" <%=producto.urgencia==='muy alta' ? 'selected' : '' %>>Muy Alta</option>
+          <option value="media" <%=producto.urgencia==='media' ? 'selected' : '' %>>Media</option>
+          <option value="baja" <%=producto.urgencia==='baja' ? 'selected' : '' %>>Baja</option>
+        </select>
+
+        <label>Imagen actual:</label><br>
+        <% if (producto.foto && producto.foto !=='/default-product.png' ) { %>
+          <img src="<%= producto.foto %>" class="foto-producto-perfil" />
+          <% } else { %>
+            <p>No hay imagen asignada</p>
+            <% } %>
+
+              <label>Cambiar imagen:</label>
+              <input type="file" name="foto" accept="image/*" />
+
+              <div class="form-actions">
+                <button class="btn-primary" type="submit">Guardar cambios</button>
+                <a href="/" class="btn-secondary">Volver al Menú</a>
+              </div>
+              <form action="/producto/eliminar/<%= producto.id %>" method="POST"
+                onsubmit="return confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')">
+                <button class="btn-danger" type="submit">Eliminar Producto</button>
+              </form>
+      </form>
+    </div>
+  </div>
+</body>
+
+</html>

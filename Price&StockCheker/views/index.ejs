@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Precios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Gestión de Precios</h1>
+  </header>
+
+
+<div class="search-wrapper">
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Buscar productos..." />
+    <button id="search-button">🔍</button>
+    <button id="clear-search" style="display:none;">✕</button>
+  </div>
+</div>
+
+<!-- Actualiza la lista de productos para que tenga un contenedor -->
+<ul class="list-empleados" id="productos-container">
+  <% productos.forEach(producto => { %>
+    <!-- Mantén tu estructura actual de items -->
+  <% }) %>
+</ul>
+
+<div class="filtros">
+  <a href="/" class="filter-btn <%= !categoriaFiltro ? 'active' : '' %>">
+    <span class="filter-icon">🗂</span> Todos
+  </a>
+  <% ['Fruta/Verdura', 'Bebida', 'Alimento', 'Otros'].forEach(cat => { %>
+    <a href="/?categoria=<%= encodeURIComponent(cat) %>" 
+       class="filter-btn <%= categoriaFiltro === cat ? 'active' : '' %>">
+      <% if (cat === 'Fruta/Verdura') { %>
+        <span class="filter-icon">🍎</span>
+      <% } else if (cat === 'Bebida') { %>
+        <span class="filter-icon">🥤</span>
+      <% } else if (cat === 'Alimento') { %>
+        <span class="filter-icon">🍞</span>
+      <% } else { %>
+        <span class="filter-icon">📦</span>
+      <% } %>
+      <%= cat %>
+    </a>
+  <% }) %>
+</div>
+
+  <div class="container">
+    <h2>Productos</h2>
+
+    <button id="btnNuevoProducto" class="btn-primary">+ Nuevo Producto</button>
+
+    <ul class="list-empleados">
+      <% productos.forEach(producto=> { %>
+        <li>
+          <% if (producto.foto && producto.foto !=='/default-product.png' ) { %>
+            <img src="<%= producto.foto %>" alt="<%= producto.nombre %>" class="foto-empleado" />
+            <% } %>
+              <div class="info-producto">
+                <span class="nombre-empleado">
+                  <%= producto.nombre %>
+                </span>
+                <span class="marca-producto">
+                  <%= producto.marca %>
+                </span>
+                <div class="precios-container">
+                  <span class="precio-compra">Compra: <%= producto.precio_compra %>€</span>
+                  <% if (producto.precio_actual) { %>
+                    <span class="precio-actual">Actual: <%= producto.precio_actual %>€</span>
+                    <% } %>
+                      <% if (producto.precio_sugerido) { %>
+                        <span class="precio-sugerido">Sugerido: <%= producto.precio_sugerido %>€</span>
+                        <% } %>
+                </div>
+              </div>
+              <div class="acciones-producto">
+                <form method="POST" action="/producto/calcular-precio/<%= producto.id %>" style="display: inline;">
+                  <button type="submit" class="btn-ia">Calcular con IA</button>
+                </form>
+                <button class="btn-verperfil" data-id="<%= producto.id %>">Ver Detalles</button>
+              </div>
+        </li>
+        <% }) %>
+    </ul>
+  </div>
+
+  <script>
+    document.querySelectorAll('.btn-verperfil').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const productoId = btn.getAttribute('data-id');
+        window.location.href = `/producto/${productoId}`;
+      });
+    });
+
+    document.getElementById('btnNuevoProducto').addEventListener('click', () => {
+      window.location.href = '/producto/nuevo';
+    });
+  </script>
+
+  <script>
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
+  const clearButton = document.getElementById('clear-search');
+  const productosContainer = document.getElementById('productos-container');
+
+  // Buscar al hacer click o presionar Enter
+  searchButton.addEventListener('click', buscarProductos);
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') buscarProductos();
+  });
+
+  // Función de búsqueda
+  async function buscarProductos() {
+    const termino = searchInput.value.trim();
+    
+    if (termino.length < 2) {
+      alert('Por favor ingresa al menos 2 caracteres');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/buscar?q=${encodeURIComponent(termino)}`);
+      const productos = await response.json();
+      
+      renderizarResultados(productos);
+      clearButton.style.display = 'inline-block';
+    } catch (error) {
+      console.error('Error buscando:', error);
+    }
+  }
+
+  // Limpiar búsqueda
+  clearButton.addEventListener('click', () => {
+    searchInput.value = '';
+    clearButton.style.display = 'none';
+    location.reload(); // O puedes guardar en memoria los productos originales
+  });
+
+  // Renderizar resultados
+  function renderizarResultados(productos) {
+    if (productos.length === 0) {
+      productosContainer.innerHTML = '<p class="no-results">No se encontraron productos</p>';
+      return;
+    }
+
+    productosContainer.innerHTML = productos.map(producto => `
+      <li>
+        <img src="${producto.foto || '/default-product.png'}" alt="${producto.nombre}" class="foto-empleado" />
+        <div class="info-producto">
+          <span class="nombre-empleado">${producto.nombre}</span>
+          <span class="marca-producto">${producto.marca}</span>
+          <div class="precios-container">
+            <span class="precio-compra">Compra: ${producto.precio_compra}€</span>
+            ${producto.precio_actual ? `<span class="precio-actual">Actual: ${producto.precio_actual}€</span>` : ''}
+          </div>
+        </div>
+        <button class="btn-verperfil" data-id="${producto.id}">Ver Detalles</button>
+      </li>
+    `).join('');
+
+    // Re-asignar eventos a los botones
+    document.querySelectorAll('.btn-verperfil').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.location.href = `/producto/${btn.getAttribute('data-id')}`;
+      });
+    });
+  }
+</script>
+</body>
+
+</html>
